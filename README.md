@@ -2,35 +2,35 @@
 
 An AI-powered NLP pipeline that takes complex clinical notes, extracts medical entities, detects and redacts PHI (Protected Health Information), explains medical jargon in plain language, and generates patient-friendly summaries.
 
-Built with privacy as a first-class concern — supports both cloud (OpenAI) and fully local (Ollama) LLM backends. Includes OCR for processing scanned documents, handwritten notes, and faxed records.
+Built with privacy as a first-class concern — supports both cloud (OpenAI) and fully local (Ollama) LLM backends. Features a **custom-trained SpaCy NER model** (trained from scratch on MedMentions) alongside a pre-trained HuggingFace model, with a UI toggle to switch between them. Includes OCR for processing scanned documents, handwritten notes, and faxed records.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 | Feature | Description |
 |---------|-------------|
-| **🔬 Biomedical NER** | Extracts diseases, symptoms, medications, and procedures using a HuggingFace transformer model (`d4data/biomedical-ner-all`) |
-| **🔒 PHI De-identification** | Detects and redacts all 18 HIPAA Safe Harbor identifiers (names, dates, SSN, MRN, phone numbers, etc.) using Microsoft Presidio |
-| **💬 Plain-Language Explanations** | Translates medical jargon into 5th-grade reading level explanations via LLM |
-| **📝 Patient-Friendly Summaries** | Generates structured visit summaries (Reason for Visit, Conditions, Medications, Next Steps) |
-| **🏠 Local LLM Support** | Run entirely offline with Ollama (Llama 3, Mistral, etc.) — no data ever leaves your machine |
-| **📷 OCR / Image Upload** | Extract text from scanned clinical notes, faxes, handwritten prescriptions, and PDFs via Tesseract |
-| **🌐 REST API** | FastAPI backend with documented endpoints for integration |
-| **🖥️ Web Interface** | Streamlit-based UI with tabbed input, PHI shield display, and backend selector |
+| **Biomedical NER** | Dual-model support: a **custom SpaCy model** trained from scratch on MedMentions (10 entity categories) and a pre-trained HuggingFace model (`d4data/biomedical-ner-all`), selectable via UI toggle |
+| **PHI De-identification** | Detects and redacts all 18 HIPAA Safe Harbor identifiers (names, dates, SSN, MRN, phone numbers, etc.) using Microsoft Presidio |
+| **Plain-Language Explanations** | Translates medical jargon into 5th-grade reading level explanations via LLM |
+| **Patient-Friendly Summaries** | Generates structured visit summaries (Reason for Visit, Conditions, Medications, Next Steps) |
+| **Local LLM Support** | Run entirely offline with Ollama (Llama 3, Mistral, etc.) — no data ever leaves your machine |
+| **OCR / Image Upload** | Extract text from scanned clinical notes, faxes, handwritten prescriptions, and PDFs via Tesseract |
+| **REST API** | FastAPI backend with documented endpoints for integration |
+| **Web Interface** | Streamlit-based UI with tabbed input, PHI shield display, and backend selector |
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         Streamlit UI (ui.py)                        │
 │   ┌──────────────────┐    ┌────────────────────────────────────┐    │
-│   │  📝 Paste Text   │    │  📷 Upload Image / PDF (OCR)      │    │
+│   │  Paste Text   │    │  Upload Image / PDF (OCR)      │    │
 │   └────────┬─────────┘    └──────────────┬─────────────────────┘    │
 │            │                             │                          │
-│            │    ⚙️ Sidebar: Backend Selector (OpenAI / Ollama)      │
+│            │    Sidebar: Backend Selector (OpenAI / Ollama)      │
 └────────────┼─────────────────────────────┼──────────────────────────┘
              │                             │
              ▼                             ▼
@@ -56,8 +56,8 @@ Built with privacy as a first-class concern — supports both cloud (OpenAI) and
 │  ┌────────────────────▼─────────────────────┐                       │
 │  │  Step 1: Named Entity Recognition (NER)   │                     │
 │  │          (ner.py)                         │                     │
-│  │          d4data/biomedical-ner-all        │                     │
-│  │          ⚡ Runs locally — no PHI risk     │                     │
+│  │          Custom SpaCy / d4data model   │                     │
+│  │          Runs locally — no PHI risk     │                     │
 │  └────────────────────┬─────────────────────┘                       │
 │                       │                                             │
 │  ┌────────────────────▼─────────────────────┐                       │
@@ -65,8 +65,8 @@ Built with privacy as a first-class concern — supports both cloud (OpenAI) and
 │  │  Step 3: Patient-Friendly Summary         │                     │
 │  │          (explainer.py)                   │                     │
 │  │                                           │                     │
-│  │  ☁️ OpenAI  ──► de-identified text sent   │                     │
-│  │  🏠 Ollama  ──► original text stays local │                     │
+│  │  OpenAI  ──► de-identified text sent   │                     │
+│  │  Ollama  ──► original text stays local │                     │
 │  └──────────────────────────────────────────┘                       │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -78,22 +78,37 @@ Built with privacy as a first-class concern — supports both cloud (OpenAI) and
 ```
 ClinicalNER/
 ├── app.py                 # FastAPI backend — REST API with all endpoints
-├── ner.py                 # Biomedical NER using HuggingFace transformers
+├── ner.py                 # Dual-model NER (custom SpaCy + pre-trained HuggingFace)
 ├── explainer.py           # Dual-backend LLM explainer (OpenAI / Ollama)
 ├── phi_deidentifier.py    # PHI detection & redaction using Presidio
 ├── ocr.py                 # OCR engine using Tesseract (images + PDFs)
 ├── ui.py                  # Streamlit frontend with tabbed interface
+├── train_ner.py           # Train custom SpaCy NER model locally
+├── train_ner_colab.ipynb  # Colab notebook for GPU-accelerated training
+├── evaluate_ner.py        # Evaluate trained model with seqeval metrics
+├── requirements.txt       # Python dependencies
+├── models/
+│   └── custom_ner_model/  # Trained SpaCy NER model (trained on MedMentions)
 └── venv/                  # Python virtual environment
 ```
 
 ### Module Details
 
 #### `ner.py` — Named Entity Recognition
-- **Model**: [`d4data/biomedical-ner-all`](https://huggingface.co/d4data/biomedical-ner-all) (HuggingFace)
-- **Strategy**: Simple aggregation to combine B/I tags
-- **Entities extracted**: Diseases, symptoms, medications, procedures, lab tests
+- **Dual-model architecture** — switch between models via API parameter or UI toggle:
+  - **Custom SpaCy model** (default): Trained from scratch on [MedMentions](https://huggingface.co/datasets/Aremaki/MedMentions) (4,392 PubMed abstracts, 350K+ entity mentions). 10 entity categories mapped from 127 UMLS Semantic Types.
+  - **Pre-trained model**: [`d4data/biomedical-ner-all`](https://huggingface.co/d4data/biomedical-ner-all) (HuggingFace transformer)
+- **Custom model entity categories**: `DISEASE`, `CHEMICAL_DRUG`, `PROCEDURE`, `ANATOMY`, `SIGN_SYMPTOM`, `ORGANISM`, `GENE_PROTEIN`, `MEDICAL_DEVICE`, `LAB_TEST`, `OTHER`
 - **Deduplication**: Filters short tokens (<3 chars) and removes duplicate mentions
 - **Runs locally** — no network calls, no PHI risk
+
+#### `train_ner.py` / `train_ner_colab.ipynb` — Model Training
+- **Dataset**: [MedMentions](https://huggingface.co/datasets/Aremaki/MedMentions) — 2,635 train / 878 validation / 879 test documents
+- **UMLS type mapping**: 127 fine-grained UMLS Semantic Types → 10 practical NER categories
+- **Architecture**: SpaCy Tok2Vec + Transition-based NER (no transformer dependency)
+- **Training**: Colab notebook recommended (~25 min on CPU, ~5-10 min with GPU)
+- **Best dev F1**: 41.0% | **Test weighted F1**: 39.5%
+- **Usage**: `python train_ner.py --dry-run` (validate) or upload `train_ner_colab.ipynb` to Colab
 
 #### `phi_deidentifier.py` — PHI De-identification
 - **Engine**: [Microsoft Presidio](https://github.com/microsoft/presidio) with spaCy `en_core_web_lg`
@@ -137,17 +152,17 @@ ClinicalNER/
 | `/health` | GET | Health check |
 
 #### `ui.py` — Streamlit Frontend
-- **Sidebar**: LLM backend selector (OpenAI Cloud / Ollama Local), model configuration
+- **Sidebar**: LLM backend selector (OpenAI Cloud / Ollama Local), **NER model selector** (Custom SpaCy / Pre-trained), model configuration
 - **Tab 1 — Paste Text**: Text area with sample clinical note, "Generate Summary" button
 - **Tab 2 — Upload Image/PDF**: Drag-and-drop file upload with image preview, two action buttons:
-  - 🔍 **Extract Text Only** (OCR)
-  - 🚀 **Full Pipeline** (OCR → NER → Summary)
+  - **Extract Text Only** (OCR)
+  - **Full Pipeline** (OCR → NER → Summary)
 - **PHI Privacy Shield**: Visual display of detected PHI with confidence scores
 - **Results**: Side-by-side entity explanations and patient-friendly summary
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -168,10 +183,7 @@ source venv/bin/activate   # macOS/Linux
 # venv\Scripts\activate    # Windows
 
 # 3. Install Python dependencies
-pip install transformers torch fastapi uvicorn pydantic
-pip install openai streamlit requests
-pip install presidio-analyzer presidio-anonymizer
-pip install pytesseract Pillow pdf2image python-multipart
+pip install -r requirements.txt
 
 # 4. Download the spaCy model (required by Presidio)
 python -m spacy download en_core_web_lg
@@ -209,7 +221,7 @@ ollama serve
 
 ---
 
-## 🔒 Privacy & HIPAA Considerations
+## Privacy & HIPAA Considerations
 
 ### PHI De-identification
 When using the **OpenAI (cloud)** backend, all clinical text is de-identified before being sent to external APIs:
@@ -242,14 +254,14 @@ Sent to AI: "Patient [PERSON] (DOB: [DATE_TIME], [MEDICAL_RECORD_NUMBER])..."
 
 ### Fully Local Mode (Ollama)
 When using the **Ollama** backend:
-- ✅ **Zero data leaves your machine** — all processing is local
-- ✅ No API keys required
-- ✅ PHI de-identification is skipped (not needed)
-- ✅ Works offline once the model is downloaded
+- **Zero data leaves your machine** — all processing is local
+- No API keys required
+- PHI de-identification is skipped (not needed)
+- Works offline once the model is downloaded
 
 ---
 
-## 🔌 API Usage Examples
+## API Usage Examples
 
 ### Summarize a Clinical Note (Text)
 ```bash
@@ -257,9 +269,12 @@ curl -X POST http://localhost:8000/summarize \
   -H "Content-Type: application/json" \
   -d '{
     "text": "Patient presents with severe dyspnea and hypertension. Prescribed Lisinopril 20mg.",
-    "llm_backend": "ollama"
+    "llm_backend": "ollama",
+    "model_type": "custom"
   }'
 ```
+
+> **`model_type`** options: `"custom"` (SpaCy, default) or `"pretrained"` (d4data HuggingFace)
 
 ### OCR — Extract Text from Image
 ```bash
@@ -276,7 +291,7 @@ curl -X POST http://localhost:8000/ocr/summarize \
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -285,6 +300,7 @@ curl -X POST http://localhost:8000/ocr/summarize \
 | `OPENAI_API_KEY` | — | Required for OpenAI backend |
 | `LLM_BACKEND` | `openai` | Default LLM backend (`openai` or `ollama`) |
 | `OLLAMA_MODEL` | `llama3` | Which Ollama model to use |
+| `MODEL_TYPE` | `custom` | Default NER model (`custom` or `pretrained`) |
 
 ### Recommended Ollama Models
 
@@ -298,11 +314,13 @@ curl -X POST http://localhost:8000/ocr/summarize \
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Component | Technology |
 |-----------|-----------|
-| NER Model | HuggingFace Transformers (`d4data/biomedical-ner-all`) |
+| NER (Custom) | SpaCy EntityRecognizer trained on MedMentions |
+| NER (Pre-trained) | HuggingFace Transformers (`d4data/biomedical-ner-all`) |
+| NER Training | SpaCy `train` + MedMentions dataset (Colab-ready) |
 | PHI Detection | Microsoft Presidio + spaCy `en_core_web_lg` |
 | LLM (Cloud) | OpenAI GPT-4o / GPT-4o-mini |
 | LLM (Local) | Ollama (Llama 3, Mistral, etc.) |
@@ -314,6 +332,3 @@ curl -X POST http://localhost:8000/ocr/summarize \
 
 ---
 
-## 📄 License
-
-This project is for educational and research purposes. When deploying in a clinical setting, ensure full compliance with HIPAA, local healthcare data regulations, and your organization's data governance policies.

@@ -47,6 +47,25 @@ with st.sidebar:
         )
 
     st.divider()
+
+    # ── NER Model Selection ────────────────────────────────────────────────
+    st.header("🧠 NER Model")
+    model_type = st.radio(
+        "Entity Recognition Model",
+        options=["custom", "pretrained"],
+        format_func=lambda x: {
+            "custom": "🎯 Custom SpaCy (MedMentions)",
+            "pretrained": "📦 Pre-trained (d4data)",
+        }[x],
+        index=0,
+        help=(
+            "**Custom**: SpaCy NER model trained from scratch on MedMentions. "
+            "Must be trained first via `python train_ner.py`.\n\n"
+            "**Pre-trained**: Uses the `d4data/biomedical-ner-all` HuggingFace model."
+        ),
+    )
+
+    st.divider()
     st.caption("ClinicalNER v2.0 — NER + Explainer + PHI Shield + OCR")
 
 # ── Main Content ──────────────────────────────────────────────────────────────
@@ -145,7 +164,7 @@ with tab_text:
         backend_label = "☁️ OpenAI" if llm_backend == "openai" else "🏠 Ollama"
         with st.spinner(f"Processing with {backend_label}..."):
             try:
-                payload = {"text": note_input, "llm_backend": llm_backend}
+                payload = {"text": note_input, "llm_backend": llm_backend, "model_type": model_type}
                 response = requests.post(f"{API_URL}/summarize", json=payload)
 
                 if response.status_code == 200:
@@ -230,7 +249,7 @@ with tab_ocr:
             with st.spinner(f"Running OCR + full pipeline with {backend_label}..."):
                 try:
                     files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
-                    form_data = {"llm_backend": llm_backend}
+                    form_data = {"llm_backend": llm_backend, "model_type": model_type}
                     response = requests.post(
                         f"{API_URL}/ocr/summarize",
                         files=files,

@@ -1,0 +1,26 @@
+# Core NLP & ML
+transformers
+torch
+spacy>=3.5
+datasets
+seqeval
+
+# API & UI
+fastapi
+uvicorn
+streamlit
+requests
+pydantic
+python-multipart
+
+# LLM Backends
+openai
+
+# PHI Detection
+presidio-analyzer
+presidio-anonymizer
+
+# OCR
+pytesseract
+Pillow
+pdf2image

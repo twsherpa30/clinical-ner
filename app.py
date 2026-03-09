@@ -21,6 +21,7 @@ def get_explainer(backend: str = "openai") -> MedicalExplainer:
 class ClinicalNoteRequest(BaseModel):
     text: str
     llm_backend: Optional[str] = "openai"  # "openai" or "ollama"
+    model_type: Optional[str] = "custom"   # "custom" (SpaCy) or "pretrained" (d4data)
 
 class Entity(BaseModel):
     text: str
@@ -72,7 +73,7 @@ def process_clinical_note(request: ClinicalNoteRequest):
         safe_text, _ = deidentify_text(request.text)
                 
         # 1. Extract entities (local model — safe to use original text)
-        entities = extract_entities(request.text)
+        entities = extract_entities(request.text, model_type=request.model_type)
         
         # 2. Explain terms (de-identifies internally if cloud backend)
         explanations = explainer.explain_terms(entities, request.text)
@@ -136,6 +137,7 @@ async def ocr_extract(file: UploadFile = File(...)):
 async def ocr_summarize(
     file: UploadFile = File(...),
     llm_backend: str = Form(default="openai"),
+    model_type: str = Form(default="custom"),
 ):
     """
     Full pipeline: OCR → NER → PHI Detection → Explain → Summarize.
@@ -177,7 +179,7 @@ async def ocr_summarize(
         safe_text, _ = deidentify_text(extracted_text)
 
         # Step 2: NER (local model)
-        entities = extract_entities(extracted_text)
+        entities = extract_entities(extracted_text, model_type=model_type)
 
         # Step 3: Explain terms
         explanations = explainer.explain_terms(entities, extracted_text)
