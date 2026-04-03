@@ -2,10 +2,10 @@
 Train a SpaCy NER model from scratch on the MedMentions dataset.
 
 Usage:
-    python train_ner.py                 # Full training run
-    python train_ner.py --dry-run       # Validate data pipeline only
-    python train_ner.py --epochs 20     # Override number of epochs
-    python train_ner.py --gpu 0         # Train on GPU 0
+    python -m training.train_ner                 # Full training run
+    python -m training.train_ner --dry-run       # Validate data pipeline only
+    python -m training.train_ner --epochs 20     # Override number of epochs
+    python -m training.train_ner --gpu 0         # Train on GPU 0
 
 Output:
     ./models/custom_ner/model-best/     # Best model checkpoint
@@ -383,7 +383,7 @@ def main():
                         help="Output directory for trained model")
     args = parser.parse_args()
 
-    project_root = Path(__file__).parent
+    project_root = Path(__file__).resolve().parent.parent
     data_dir = project_root / "data"
     data_dir.mkdir(exist_ok=True)
     output_dir = Path(args.output)
@@ -414,7 +414,7 @@ def main():
     print("STEP 3: Generating SpaCy config")
     print("=" * 60)
 
-    config_path = project_root / "config.cfg"
+    config_path = project_root / "training" / "config.cfg"
     generate_config(config_path, NER_LABELS, gpu_id=args.gpu)
 
     # ── Summary ───────────────────────────────────────────────────────────

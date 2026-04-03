@@ -15,6 +15,7 @@ python-multipart
 
 # LLM Backends
 openai
+python-dotenv
 
 # PHI Detection
 presidio-analyzer

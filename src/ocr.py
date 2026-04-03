@@ -257,7 +257,7 @@ if __name__ == "__main__":
 
     draw.text((20, 40), test_text, fill="black", font=font)
 
-    print("\n🔍 Running OCR on test image...")
+    print("\n Running OCR on test image...")
     extracted, meta = extract_text_from_image(img, preprocess=True)
     print(f"\nExtracted text:\n  {extracted}")
     print(f"\nMetadata:\n  {meta}")

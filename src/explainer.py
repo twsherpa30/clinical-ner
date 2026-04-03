@@ -20,7 +20,7 @@ import re
 from typing import List, Dict, Any, Optional
 from openai import OpenAI
 
-from phi_deidentifier import deidentify_text
+from src.phi_deidentifier import deidentify_text
 
 
 # ── Backend configuration ─────────────────────────────────────────────────────
@@ -298,4 +298,3 @@ if __name__ == "__main__":
         print(summary)
     else:
         print("OPENAI_API_KEY not set and not using Ollama. Skipping test.")
-

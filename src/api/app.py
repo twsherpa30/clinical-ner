@@ -3,10 +3,10 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import uvicorn
 
-from ner import extract_entities
-from explainer import MedicalExplainer
-from phi_deidentifier import detect_phi, deidentify_text
-from ocr import extract_text_from_bytes
+from src.ner import extract_entities
+from src.explainer import MedicalExplainer
+from src.phi_deidentifier import detect_phi, deidentify_text
+from src.ocr import extract_text_from_bytes
 
 app = FastAPI(title="Clinical NER & Patient Summarization API")
 

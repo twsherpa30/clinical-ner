@@ -6,7 +6,7 @@ from transformers import pipeline
 import spacy
 
 # ── Model Configuration ───────────────────────────────────────────────────────
-CUSTOM_MODEL_PATH = Path(__file__).parent / "models" / "custom_ner_model"
+CUSTOM_MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "custom_ner_model"
 
 # Lazy-loaded model singletons
 _pretrained_pipeline = None
@@ -35,7 +35,7 @@ def _load_custom():
     if _custom_nlp is None:
         if not CUSTOM_MODEL_PATH.exists():
             print(f"[NER] Custom model not found at: {CUSTOM_MODEL_PATH}")
-            print("      Train one first: python train_ner.py")
+            print("      Train one first: python -m training.train_ner")
             return None
         try:
             _custom_nlp = spacy.load(CUSTOM_MODEL_PATH)
@@ -84,7 +84,7 @@ def _extract_custom(text: str) -> List[Dict[str, Any]]:
     if nlp is None:
         raise RuntimeError(
             "Custom NER model is not loaded. "
-            "Train one first: python train_ner.py"
+            "Train one first: python -m training.train_ner"
         )
 
     doc = nlp(text)

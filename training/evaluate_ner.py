@@ -2,8 +2,8 @@
 Evaluate the custom SpaCy NER model on the MedMentions test split.
 
 Usage:
-    python evaluate_ner.py
-    python evaluate_ner.py --model ./models/custom_ner/model-best
+    python -m training.evaluate_ner
+    python -m training.evaluate_ner --model ./models/custom_ner/model-best
 """
 
 import argparse
@@ -14,7 +14,7 @@ import spacy
 from datasets import load_dataset
 from seqeval.metrics import classification_report, f1_score
 
-from train_ner import load_and_convert_medmentions, NER_LABELS
+from training.train_ner import load_and_convert_medmentions, NER_LABELS
 
 
 def tokens_to_bio(doc, gold_entities):
@@ -59,7 +59,7 @@ def main():
     model_path = Path(args.model)
     if not model_path.exists():
         print(f"❌ Model not found at: {model_path}")
-        print("   Train a model first: python train_ner.py")
+        print("   Train a model first: python -m training.train_ner")
         return
 
     # Load model

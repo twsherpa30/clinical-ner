@@ -60,7 +60,7 @@ with st.sidebar:
         index=0,
         help=(
             "**Custom**: SpaCy NER model trained from scratch on MedMentions. "
-            "Must be trained first via `python train_ner.py`.\n\n"
+            "Must be trained first via `python -m training.train_ner`.\n\n"
             "**Pre-trained**: Uses the `d4data/biomedical-ner-all` HuggingFace model."
         ),
     )
@@ -175,7 +175,7 @@ with tab_text:
             except requests.exceptions.ConnectionError:
                 st.error(
                     "Cannot connect to the backend API. Please make sure "
-                    "`app.py` is running on port 8000."
+                    "the API server is running on port 8000."
                 )
 
 # ── Tab 2: Upload Image/PDF ───────────────────────────────────────────────────
@@ -241,7 +241,7 @@ with tab_ocr:
                 except requests.exceptions.ConnectionError:
                     st.error(
                         "Cannot connect to the backend API. Please make sure "
-                        "`app.py` is running on port 8000."
+                        "the API server is running on port 8000."
                     )
 
         if full_pipeline:
@@ -279,5 +279,5 @@ with tab_ocr:
                 except requests.exceptions.ConnectionError:
                     st.error(
                         "Cannot connect to the backend API. Please make sure "
-                        "`app.py` is running on port 8000."
+                        "the API server is running on port 8000."
                     )
